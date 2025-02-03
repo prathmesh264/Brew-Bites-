@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Retrieve</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        input[type="text"], input[type="file"] {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin: 10px 0;
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Upload and Retrieve</h1>
+
+        <h2>Upload Image</h2>
+        <form id="uploadForm" method="post">
+            <input type="file" id="fileInput" accept="image/*" required />
+            <button type="submit">Upload</button>
+            <div id="uploadMessage" class="message"></div>
+        </form>
+
+        <h2>Retrieve Image</h2>
+        <form id="retrieveForm">
+            <input type="text" id="imageId" placeholder="Enter Image ID" required />
+            <button type="submit">Retrieve</button>
+            <div id="retrieveMessage" class="message"></div>
+        </form>
+
+        <div id="imageDisplay">
+            <img id="retrievedImage" src="" alt="Retrieved Image" style="display: none;" />
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const retrieveForm = document.getElementById('retrieveForm');
+        const uploadMessage = document.getElementById('uploadMessage');
+        const retrieveMessage = document.getElementById('retrieveMessage');
+        const retrievedImage = document.getElementById('retrievedImage');
+
+        // Handle image upload
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            uploadMessage.textContent = '';
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                uploadMessage.textContent = 'Please select an image.';
+                uploadMessage.className = 'error';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/images/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.text();
+
+                if (response.ok) {
+                    uploadMessage.textContent = result;
+                    uploadMessage.className = 'message';
+                } else {
+                    uploadMessage.textContent = result;
+                    uploadMessage.className = 'error';
+                }
+            } catch (error) {
+                uploadMessage.textContent = 'Error uploading image: ' + error.message;
+                uploadMessage.className = 'error';
+            }
+        });
+
+        // Handle image retrieval
+        retrieveForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            retrieveMessage.textContent = '';
+
+            const imageId = document.getElementById('imageId').value.trim();
+
+            if (!imageId) {
+                retrieveMessage.textContent = 'Please enter a valid image ID.';
+                retrieveMessage.className = 'error';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/images/get/${imageId}`);
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    retrievedImage.src = url;
+                    retrievedImage.style.display = 'block';
+                    retrieveMessage.textContent = 'Image retrieved successfully.';
+                    retrieveMessage.className = 'message';
+                } else {
+                    retrievedImage.style.display = 'none';
+                    retrieveMessage.textContent = 'Image not found or an error occurred.';
+                    retrieveMessage.className = 'error';
+                }
+            } catch (error) {
+                retrieveMessage.textContent = 'Error retrieving image: ' + error.message;
+                retrieveMessage.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

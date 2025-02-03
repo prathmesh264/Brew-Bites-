@@ -1,0 +1,42 @@
+<form id="recipeForm" enctype="multipart/form-data">
+    <label for="recipeName">Recipe Name:</label>
+    <input type="text" id="recipeName" name="recipeName" required />
+
+    <label for="cuisineType">Cuisine Type:</label>
+    <input type="text" id="cuisineType" name="cuisineType" />
+
+    <label for="ingredients">Ingredients:</label>
+    <input type="text" id="ingredients" name="ingredients" />
+
+    <label for="preparationTime">Preparation Time (mins):</label>
+    <input type="number" id="preparationTime" name="preparationTime" />
+
+    <label for="cookingInstructions">Cooking Instructions:</label>
+    <textarea id="cookingInstructions" name="cookingInstructions"></textarea>
+
+    <label for="difficultyLevel">Difficulty Level:</label>
+    <input type="text" id="difficultyLevel" name="difficultyLevel" />
+
+    <label for="image">Upload Image:</label>
+    <input type="file" id="image" name="image" accept="image/*" />
+
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+    document.getElementById('recipeForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const response = await fetch('/api/recipes', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            alert('Recipe created successfully!');
+        } else {
+            alert('Error creating recipe');
+        }
+    });
+</script>
